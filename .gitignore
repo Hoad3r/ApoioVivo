@@ -1,0 +1,92 @@
+# ──────────────────────────────────────────────────────────────
+# Claude Code / Superpowers / AI tooling — never commit these
+# ──────────────────────────────────────────────────────────────
+.claude/
+.claude/**
+CLAUDE.local.md
+GEMINI.md
+AGENTS.md
+.cursor/
+.aider*
+.codeium/
+
+# Superpowers plans, brainstorms, worktrees, vaults
+plans/
+*.plan.md
+brainstorm*.md
+.superpowers/
+docs/superpowers/
+.worktrees/
+vault/
+.vault/
+
+# Reference material (assignment brief + PI-I) — kept local, not versioned
+Projeto Interdisciplinar II.pdf
+*.pdf
+*.docx
+_piready/
+
+# context-mode knowledge base / sandbox
+.context-mode/
+.ctx/
+context-mode.db
+*.ctx.db
+
+# Repomix packed output
+repomix-output.*
+.repomix/
+
+# graphify output
+*.graph.json
+*.graph.html
+graphify-output/
+
+# ──────────────────────────────────────────────────────────────
+# Environment & secrets
+# ──────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.vercel
+
+# ──────────────────────────────────────────────────────────────
+# Node / JS tooling
+# ──────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+
+# ──────────────────────────────────────────────────────────────
+# Build output / framework caches
+# ──────────────────────────────────────────────────────────────
+.next/
+out/
+dist/
+build/
+.turbo/
+.cache/
+.parcel-cache/
+.svelte-kit/
+.nuxt/
+.astro/
+coverage/
+*.tsbuildinfo
+
+# ──────────────────────────────────────────────────────────────
+# OS / editor cruft
+# ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.idea/
+.vscode/
+*~

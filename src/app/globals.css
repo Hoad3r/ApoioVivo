@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Base acessível: fonte grande por padrão (público idoso) */
+html {
+  font-size: 18px;
+}
+
+body {
+  background: #fafafa;
+  color: #18181b;
+}
+
+/* Foco visível forte em todos os controles (WCAG 2.4.7) */
+:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+/* Modo alto contraste — ampliado na fase de acessibilidade */
+.alto-contraste body {
+  background: #000;
+  color: #fff;
+}
