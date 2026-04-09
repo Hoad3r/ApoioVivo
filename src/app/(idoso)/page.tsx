@@ -36,6 +36,12 @@ export default function Inicio() {
           icon="📞"
           variante="vermelho"
         />
+        <BotaoGrande
+          href="/monitoramento"
+          label="Monitoramento"
+          icon="📷"
+          variante="azul"
+        />
         <BotaoGrande href="/historico" label="Histórico" icon="🕐" variante="neutro" />
 
         <div className="rounded-2xl bg-zinc-100 px-5 py-4 text-center">
