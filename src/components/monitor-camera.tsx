@@ -2,22 +2,51 @@
 
 import { useEffect, useRef, useState } from "react";
 import { detectarObjetos, type Predicao } from "@/lib/vision/objetos";
+import { detectarPose } from "@/lib/vision/pose";
+import { avaliarQueda } from "@/lib/vision/queda";
 import { traduzir } from "@/lib/vision/traducoes";
 import { falar } from "@/lib/voice";
+import { getDataStore } from "@/lib/data";
 
 const LIMIAR = 0.6;
+const FRAMES_PARA_QUEDA = 3;
+const DEBOUNCE_QUEDA_MS = 15000;
 
 export function MonitorCamera() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ultimoFalado = useRef<string>("");
-  const [status, setStatus] = useState("Iniciando câmera…");
+  const ultimoFalado = useRef("");
+  const ultimaQueda = useRef(0);
+  const framesQueda = useRef(0);
+  const registrarQuedaRef = useRef<(origem: "real" | "simulada") => void>(
+    () => {},
+  );
+  const [status, setStatus] = useState("Carregando modelos de IA…");
   const [objetos, setObjetos] = useState<string[]>([]);
+  const [alertaQueda, setAlertaQueda] = useState(false);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
     let ativo = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+
+    function registrarQueda(origem: "real" | "simulada") {
+      const agora = Date.now();
+      if (agora - ultimaQueda.current < DEBOUNCE_QUEDA_MS) return;
+      ultimaQueda.current = agora;
+      getDataStore().addEvento({
+        tipo: "queda",
+        descricao:
+          origem === "simulada"
+            ? "Queda simulada para demonstração"
+            : "Queda detectada pela câmera",
+        urgente: true,
+      });
+      falar("Atenção! Detectamos uma possível queda. O cuidador foi avisado.");
+      setAlertaQueda(true);
+      setTimeout(() => setAlertaQueda(false), 6000);
+    }
+    registrarQuedaRef.current = registrarQueda;
 
     function desenhar(preds: Predicao[]) {
       const v = videoRef.current;
@@ -64,10 +93,23 @@ export function MonitorCamera() {
             falar(`Isto é: ${principal}`);
           }
         } catch {
-          /* frame com erro: ignora e continua */
+          /* frame de objeto com erro: ignora */
+        }
+
+        try {
+          const keypoints = await detectarPose(v);
+          if (!ativo) return;
+          const caiu = avaliarQueda(keypoints);
+          framesQueda.current = caiu ? framesQueda.current + 1 : 0;
+          if (framesQueda.current >= FRAMES_PARA_QUEDA) {
+            framesQueda.current = 0;
+            registrarQueda("real");
+          }
+        } catch {
+          /* frame de pose com erro: ignora */
         }
       }
-      timer = setTimeout(loop, 700);
+      timer = setTimeout(loop, 800);
     }
 
     async function iniciar() {
@@ -80,7 +122,7 @@ export function MonitorCamera() {
         if (!v) return;
         v.srcObject = stream;
         await v.play();
-        setStatus("Reconhecendo objetos…");
+        setStatus("Monitorando: objetos e quedas");
         loop();
       } catch {
         setStatus(
@@ -100,6 +142,15 @@ export function MonitorCamera() {
 
   return (
     <div className="space-y-4">
+      {alertaQueda && (
+        <div
+          role="alert"
+          className="rounded-2xl bg-red-600 px-5 py-4 text-center text-lg font-bold text-white"
+        >
+          🚨 Queda detectada! O cuidador foi avisado.
+        </div>
+      )}
+
       <div className="relative overflow-hidden rounded-2xl bg-black">
         <video
           ref={videoRef}
@@ -130,6 +181,14 @@ export function MonitorCamera() {
           {objetos.length > 0 ? objetos.join(", ") : "—"}
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={() => registrarQuedaRef.current("simulada")}
+        className="w-full rounded-2xl border-2 border-red-300 bg-red-50 py-4 text-lg font-bold text-red-700 hover:bg-red-100"
+      >
+        🧪 Simular queda (demonstração)
+      </button>
     </div>
   );
 }
