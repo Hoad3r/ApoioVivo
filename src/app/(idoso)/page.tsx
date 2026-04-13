@@ -14,8 +14,8 @@ export default function Inicio() {
   return (
     <main>
       <header className="rounded-b-3xl bg-blue-800 px-6 pb-8 pt-7 text-white">
-        <p className="text-lg">{saudacao()},</p>
-        <p className="text-3xl font-bold">{nome}</p>
+        <p className="text-lg sm:text-xl">{saudacao()},</p>
+        <p className="text-3xl font-bold sm:text-4xl">{nome}</p>
       </header>
 
       <div className="space-y-4 px-5 py-6">

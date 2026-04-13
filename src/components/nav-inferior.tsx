@@ -16,9 +16,9 @@ export function NavInferior() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white"
+      className="fixed bottom-0 left-1/2 z-10 w-full max-w-md -translate-x-1/2 border-t border-zinc-200 bg-white sm:max-w-lg"
     >
-      <ul className="mx-auto flex max-w-md">
+      <ul className="flex">
         {ITENS.map((it) => {
           const ativo =
             it.href === "/" ? path === "/" : path.startsWith(it.href);

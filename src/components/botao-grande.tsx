@@ -26,9 +26,9 @@ export function BotaoGrande({
   return (
     <Link
       href={href}
-      className={`flex min-h-16 items-center justify-center gap-3 rounded-2xl px-6 py-5 text-2xl font-bold shadow-sm transition-colors ${ESTILOS[variante]}`}
+      className={`flex min-h-16 items-center justify-center gap-3 rounded-2xl px-6 py-5 text-2xl font-bold shadow-sm transition-colors sm:min-h-20 sm:text-3xl ${ESTILOS[variante]}`}
     >
-      <span aria-hidden className="text-3xl">
+      <span aria-hidden className="text-3xl sm:text-4xl">
         {icon}
       </span>
       {label}
