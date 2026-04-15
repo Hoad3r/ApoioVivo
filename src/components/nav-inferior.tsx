@@ -7,7 +7,7 @@ const ITENS = [
   { href: "/", label: "Início", icon: "🏠" },
   { href: "/lembretes", label: "Lembretes", icon: "🔔" },
   { href: "/historico", label: "Histórico", icon: "🕐" },
-  { href: "/cuidador/painel", label: "Alertas", icon: "📢" },
+  { href: "/painel", label: "Cuidador", icon: "📢" },
 ];
 
 /** Barra de navegação inferior acessível (tab bar). */

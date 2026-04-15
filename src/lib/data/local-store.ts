@@ -7,9 +7,13 @@ export interface KeyValue {
   setItem(key: string, value: string): void;
 }
 
+const K_VERSAO = "apoiovivo:versao";
 const K_USUARIO = "apoiovivo:usuario";
 const K_LEMBRETES = "apoiovivo:lembretes";
 const K_EVENTOS = "apoiovivo:eventos";
+
+/** Bump para forçar a reaplicação do seed em navegadores com dados antigos. */
+const VERSAO = "2";
 
 const SEED_USUARIO: Usuario = { id: "u1", nome: "Maria", idade: 78 };
 
@@ -21,7 +25,8 @@ const SEED_LEMBRETES: Lembrete[] = [
   { id: "l5", titulo: "Jantar", hora: "19:00", recorrencia: "diario" },
 ];
 
-const SEED_EVENTOS: Evento[] = [
+/** Eventos nomeados que aparecem como alertas no Painel do Cuidador. */
+const SEED_ALERTAS: Evento[] = [
   {
     id: "e1",
     tipo: "atividade",
@@ -45,13 +50,33 @@ const SEED_EVENTOS: Evento[] = [
   },
 ];
 
+/** Atividade espalhada pelos últimos 7 dias, para popular o gráfico semanal. */
+function gerarAtividadesSemana(agora = Date.now()): Evento[] {
+  const eventos: Evento[] = [];
+  const porDia = [4, 3, 4, 3, 4, 2, 3]; // hoje (0) .. 6 dias atrás
+  for (let d = 0; d < porDia.length; d++) {
+    for (let i = 0; i < porDia[d]; i++) {
+      const t = new Date(agora - d * 86400000 - i * 2 * 3600000);
+      eventos.push({
+        id: `atv-${d}-${i}`,
+        tipo: "atividade",
+        descricao: "Atividade detectada em casa",
+        criadoEm: t.toISOString(),
+        urgente: false,
+      });
+    }
+  }
+  return eventos;
+}
+
 /** Implementação de DataStore sobre uma store chave-valor, com dados-semente. */
 export class LocalStore implements DataStore {
   constructor(private storage: KeyValue) {
-    if (this.storage.getItem(K_USUARIO) === null) {
+    if (this.storage.getItem(K_VERSAO) !== VERSAO) {
+      this.storage.setItem(K_VERSAO, VERSAO);
       this.write(K_USUARIO, SEED_USUARIO);
       this.write(K_LEMBRETES, SEED_LEMBRETES);
-      this.write(K_EVENTOS, SEED_EVENTOS);
+      this.write(K_EVENTOS, [...SEED_ALERTAS, ...gerarAtividadesSemana()]);
     }
   }
 
