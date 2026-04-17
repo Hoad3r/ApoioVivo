@@ -16,8 +16,28 @@ body {
   outline-offset: 2px;
 }
 
-/* Modo alto contraste — ampliado na fase de acessibilidade */
+/* Modo alto contraste (WCAG): fundo preto, texto branco, contornos visíveis. */
 .alto-contraste body {
   background: #000;
-  color: #fff;
+}
+.alto-contraste .bg-zinc-50,
+.alto-contraste .bg-zinc-100,
+.alto-contraste .bg-zinc-200,
+.alto-contraste .bg-white {
+  background: #000 !important;
+  color: #fff !important;
+}
+.alto-contraste .text-zinc-900,
+.alto-contraste .text-zinc-700,
+.alto-contraste .text-zinc-600,
+.alto-contraste .text-zinc-500,
+.alto-contraste .text-zinc-400 {
+  color: #fff !important;
+}
+.alto-contraste .shadow-sm,
+.alto-contraste .border {
+  box-shadow: 0 0 0 2px #fff !important;
+}
+.alto-contraste :focus-visible {
+  outline: 4px solid #ffeb3b;
 }

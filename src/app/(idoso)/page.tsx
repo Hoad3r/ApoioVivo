@@ -1,4 +1,6 @@
 import { BotaoGrande } from "@/components/botao-grande";
+import { AltoContrasteToggle } from "@/components/alto-contraste-toggle";
+import { ProximoLembrete } from "@/components/proximo-lembrete";
 
 function saudacao(d = new Date()): string {
   const h = d.getHours();
@@ -14,8 +16,13 @@ export default function Inicio() {
   return (
     <main>
       <header className="rounded-b-3xl bg-blue-800 px-6 pb-8 pt-7 text-white">
-        <p className="text-lg sm:text-xl">{saudacao()},</p>
-        <p className="text-3xl font-bold sm:text-4xl">{nome}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-lg sm:text-xl">{saudacao()},</p>
+            <p className="text-3xl font-bold sm:text-4xl">{nome}</p>
+          </div>
+          <AltoContrasteToggle />
+        </div>
       </header>
 
       <div className="space-y-4 px-5 py-6">
@@ -44,12 +51,7 @@ export default function Inicio() {
         />
         <BotaoGrande href="/historico" label="Histórico" icon="🕐" variante="neutro" />
 
-        <div className="rounded-2xl bg-zinc-100 px-5 py-4 text-center">
-          <p className="text-zinc-600">
-            Próximo lembrete às <strong className="text-zinc-900">14:00</strong>
-          </p>
-          <p className="text-zinc-600">Tomar remédio para pressão</p>
-        </div>
+        <ProximoLembrete />
       </div>
     </main>
   );

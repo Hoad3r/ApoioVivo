@@ -19,7 +19,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-dvh bg-zinc-200 antialiased">{children}</body>
+      <body className="min-h-dvh bg-zinc-200 antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('apoiovivo:contraste')==='1')document.documentElement.classList.add('alto-contraste')}catch(e){}",
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

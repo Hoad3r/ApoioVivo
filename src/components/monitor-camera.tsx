@@ -21,9 +21,11 @@ export function MonitorCamera() {
   const registrarQuedaRef = useRef<(origem: "real" | "simulada") => void>(
     () => {},
   );
+  const saudou = useRef(false);
   const [status, setStatus] = useState("Carregando modelos de IA…");
   const [objetos, setObjetos] = useState<string[]>([]);
   const [alertaQueda, setAlertaQueda] = useState(false);
+  const [saudacaoFacial, setSaudacaoFacial] = useState<string | null>(null);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -105,6 +107,15 @@ export function MonitorCamera() {
             framesQueda.current = 0;
             registrarQueda("real");
           }
+
+          const nariz = keypoints.find((k) => k.name === "nose");
+          if (nariz && (nariz.score ?? 0) > 0.4 && !saudou.current) {
+            saudou.current = true;
+            const nome = getDataStore().getUsuario().nome;
+            const msg = `Olá, ${nome}! Que bom ver você.`;
+            setSaudacaoFacial(msg);
+            falar(msg);
+          }
         } catch {
           /* frame de pose com erro: ignora */
         }
@@ -148,6 +159,12 @@ export function MonitorCamera() {
           className="rounded-2xl bg-red-600 px-5 py-4 text-center text-lg font-bold text-white"
         >
           🚨 Queda detectada! O cuidador foi avisado.
+        </div>
+      )}
+
+      {saudacaoFacial && (
+        <div className="rounded-2xl bg-green-600 px-5 py-3 text-center text-lg font-bold text-white">
+          👋 {saudacaoFacial}
         </div>
       )}
 
