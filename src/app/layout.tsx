@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Apoio Vivo",
   description:
     "Aplicação assistiva com visão computacional para apoio a idosos com comprometimento cognitivo leve.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Apoio Vivo", statusBarStyle: "default" },
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
 };
 
 export const viewport: Viewport = {

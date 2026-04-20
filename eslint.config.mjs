@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Inicializamos estado client-only (localStorage, câmera, getDataStore) no
+      // mount via useEffect — padrão necessário no Next.js (não roda no SSR).
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

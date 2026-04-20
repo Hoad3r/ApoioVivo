@@ -9,4 +9,5 @@
  */
 export class Pose {}
 
-export default {};
+const mediapipePoseStub = {};
+export default mediapipePoseStub;

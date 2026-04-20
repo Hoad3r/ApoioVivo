@@ -1,0 +1,19 @@
+{
+  "name": "Apoio Vivo",
+  "short_name": "Apoio Vivo",
+  "description": "Aplicação assistiva com visão computacional para apoio a idosos com comprometimento cognitivo leve.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
