@@ -5,6 +5,8 @@ import { detectarObjetos, type Predicao } from "@/lib/vision/objetos";
 import { detectarPose } from "@/lib/vision/pose";
 import { avaliarQueda } from "@/lib/vision/queda";
 import { traduzir } from "@/lib/vision/traducoes";
+import { infoObjetoEssencial } from "@/lib/vision/objetos-essenciais";
+import { detectarAmbiente } from "@/lib/vision/ambiente";
 import { falar } from "@/lib/voice";
 import { getDataStore } from "@/lib/data";
 
@@ -22,10 +24,13 @@ export function MonitorCamera() {
     () => {},
   );
   const saudou = useRef(false);
+  const alertouCozinha = useRef(false);
   const [status, setStatus] = useState("Carregando modelos de IA…");
   const [objetos, setObjetos] = useState<string[]>([]);
   const [alertaQueda, setAlertaQueda] = useState(false);
   const [saudacaoFacial, setSaudacaoFacial] = useState<string | null>(null);
+  const [infoObjeto, setInfoObjeto] = useState<string | null>(null);
+  const [ambiente, setAmbiente] = useState<string | null>(null);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -83,16 +88,31 @@ export function MonitorCamera() {
           const preds = await detectarObjetos(v);
           if (!ativo) return;
           desenhar(preds);
-          const nomes = [
-            ...new Set(
-              preds.filter((p) => p.score >= LIMIAR).map((p) => traduzir(p.class)),
-            ),
-          ];
-          setObjetos(nomes);
-          const principal = nomes[0];
-          if (principal && principal !== ultimoFalado.current) {
-            ultimoFalado.current = principal;
-            falar(`Isto é: ${principal}`);
+          const validos = preds.filter((p) => p.score >= LIMIAR);
+          const classes = validos.map((p) => p.class);
+          setObjetos([...new Set(validos.map((p) => traduzir(p.class)))]);
+
+          const principal = [...validos].sort((a, b) => b.score - a.score)[0];
+          if (principal && principal.class !== ultimoFalado.current) {
+            ultimoFalado.current = principal.class;
+            const info = infoObjetoEssencial(principal.class);
+            const msg = info ?? `Isto é: ${traduzir(principal.class)}`;
+            setInfoObjeto(msg);
+            falar(msg);
+          }
+
+          const amb = detectarAmbiente(classes);
+          setAmbiente(amb);
+          if (amb === "cozinha" && !alertouCozinha.current) {
+            alertouCozinha.current = true;
+            const nome = getDataStore().getUsuario().nome;
+            const hora = new Date().getHours();
+            const almoco = hora >= 11 && hora <= 14;
+            const msg = almoco
+              ? `Olá, ${nome}! Você está na cozinha e já passa do meio-dia. É uma ótima hora para almoçar. Lembre-se de beber água também.`
+              : `Olá, ${nome}! Você está na cozinha. Lembre-se de se alimentar bem e beber água.`;
+            setInfoObjeto(msg);
+            falar(msg);
           }
         } catch {
           /* frame de objeto com erro: ignora */
@@ -197,7 +217,23 @@ export function MonitorCamera() {
         <p className="mt-1 text-xl font-bold text-zinc-900">
           {objetos.length > 0 ? objetos.join(", ") : "—"}
         </p>
+        {ambiente && (
+          <p className="mt-2 text-sm text-zinc-600">
+            <span aria-hidden>📍</span> Ambiente:{" "}
+            <strong className="capitalize text-zinc-900">{ambiente}</strong>
+          </p>
+        )}
       </div>
+
+      {infoObjeto && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-2xl bg-blue-50 px-5 py-4 text-blue-900"
+        >
+          <span aria-hidden>💬</span> {infoObjeto}
+        </div>
+      )}
 
       <button
         type="button"
