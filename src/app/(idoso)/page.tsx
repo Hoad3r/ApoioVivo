@@ -1,6 +1,7 @@
 import { BotaoGrande } from "@/components/botao-grande";
 import { AltoContrasteToggle } from "@/components/alto-contraste-toggle";
 import { ProximoLembrete } from "@/components/proximo-lembrete";
+import { ComandoVoz } from "@/components/comando-voz";
 
 function saudacao(d = new Date()): string {
   const h = d.getHours();
@@ -35,6 +36,8 @@ export default function Inicio() {
             <p className="text-sm opacity-90">Monitoramento ativo</p>
           </div>
         </div>
+
+        <ComandoVoz />
 
         <BotaoGrande href="/lembretes" label="Lembretes" icon="🔔" variante="azul" />
         <BotaoGrande
