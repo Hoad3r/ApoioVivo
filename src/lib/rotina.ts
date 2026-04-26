@@ -83,3 +83,64 @@ export function detectarAnomalia(
 
   return { anomalia: false, motivo: null };
 }
+
+/** Aprende o perfil de atividade por hora (0–23) a partir do histórico. */
+export function perfilAtividadePorHora(eventos: Evento[]): number[] {
+  const horas = new Array<number>(24).fill(0);
+  for (const e of eventos) {
+    if (e.tipo !== "atividade") continue;
+    horas[new Date(e.criadoEm).getHours()] += 1;
+  }
+  return horas;
+}
+
+/** Conjunto de horas em que a pessoa costuma estar ativa (rotina aprendida). */
+export function horasAtivas(eventos: Evento[]): Set<number> {
+  const perfil = perfilAtividadePorHora(eventos);
+  const naoNulas = perfil.filter((c) => c > 0);
+  const media = naoNulas.length
+    ? naoNulas.reduce((a, b) => a + b, 0) / naoNulas.length
+    : 0;
+  const limite = Math.max(1, media * 0.5);
+  const ativas = new Set<number>();
+  perfil.forEach((c, h) => {
+    if (c >= limite) ativas.add(h);
+  });
+  return ativas;
+}
+
+/**
+ * Anomalia baseada na rotina APRENDIDA: se o horário atual costuma ser ativo,
+ * mas não há atividade recente, sinaliza. Também sinaliza lembrete ignorado.
+ */
+export function detectarAnomaliaAprendida(
+  eventos: Evento[],
+  agora: Date = new Date(),
+): ResultadoAnomalia {
+  const ignorado = eventos.find(
+    (e) => e.tipo === "lembrete-ignorado" && e.urgente,
+  );
+  if (ignorado) {
+    return {
+      anomalia: true,
+      motivo: ignorado.descricao || "Lembrete importante ignorado",
+    };
+  }
+
+  const ativas = horasAtivas(eventos);
+  const hora = agora.getHours();
+  if (ativas.has(hora)) {
+    const ultima = eventos
+      .filter((e) => e.tipo === "atividade")
+      .map((e) => new Date(e.criadoEm).getTime())
+      .sort((a, b) => b - a)[0];
+    if (ultima === undefined || agora.getTime() - ultima > INATIVIDADE_LIMITE_MS) {
+      return {
+        anomalia: true,
+        motivo: "Sem atividade em um horário em que a rotina costuma ser ativa",
+      };
+    }
+  }
+
+  return { anomalia: false, motivo: null };
+}

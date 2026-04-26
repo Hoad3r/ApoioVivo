@@ -5,7 +5,8 @@ import Link from "next/link";
 import type { Evento, TipoEvento, Usuario } from "@/lib/types";
 import { getDataStore } from "@/lib/data";
 import {
-  detectarAnomalia,
+  detectarAnomaliaAprendida,
+  horasAtivas,
   mediaAtividade,
   resumoAtividadeSemanal,
   type DiaAtividade,
@@ -39,6 +40,7 @@ export default function PainelCuidadorPage() {
     anomalia: false,
     motivo: null,
   });
+  const [rotina, setRotina] = useState<string | null>(null);
 
   useEffect(() => {
     const store = getDataStore();
@@ -47,7 +49,11 @@ export default function PainelCuidadorPage() {
     const resumo = resumoAtividadeSemanal(eventos);
     setDados(resumo);
     setMedia(mediaAtividade(resumo));
-    setAnomalia(detectarAnomalia(eventos));
+    setAnomalia(detectarAnomaliaAprendida(eventos));
+    const ativas = [...horasAtivas(eventos)].sort((a, b) => a - b);
+    setRotina(
+      ativas.length ? `${ativas[0]}h–${ativas[ativas.length - 1]}h` : null,
+    );
 
     const ultimaAtividade = eventos.find((e) => e.tipo === "atividade");
     const naoAtividade = eventos.filter((e) => e.tipo !== "atividade");

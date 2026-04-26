@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   detectarAnomalia,
+  detectarAnomaliaAprendida,
+  horasAtivas,
+  perfilAtividadePorHora,
   resumoAtividadeSemanal,
   mediaAtividade,
 } from "@/lib/rotina";
@@ -70,5 +73,43 @@ describe("mediaAtividade", () => {
         { dia: "Ter", percentual: 100 },
       ]),
     ).toBe(75);
+  });
+});
+
+describe("rotina aprendida", () => {
+  it("aprende o perfil de atividade por hora", () => {
+    const perfil = perfilAtividadePorHora([
+      ev("atividade", "2026-06-17T08:00:00"),
+      ev("atividade", "2026-06-17T08:30:00"),
+    ]);
+    expect(perfil[8]).toBe(2);
+    expect(perfil[3]).toBe(0);
+  });
+
+  it("identifica as horas em que costuma estar ativa", () => {
+    const eventos = [
+      ev("atividade", "2026-06-17T08:00:00"),
+      ev("atividade", "2026-06-17T09:00:00"),
+    ];
+    expect(horasAtivas(eventos).has(8)).toBe(true);
+    expect(horasAtivas(eventos).has(3)).toBe(false);
+  });
+
+  it("acusa anomalia em hora ativa sem atividade recente", () => {
+    const eventos = [
+      ev("atividade", "2026-06-15T08:00:00"),
+      ev("atividade", "2026-06-16T08:00:00"),
+    ];
+    const agora = new Date("2026-06-17T08:00:00");
+    expect(detectarAnomaliaAprendida(eventos, agora).anomalia).toBe(true);
+  });
+
+  it("sem anomalia quando houve atividade recente na hora ativa", () => {
+    const agora = new Date("2026-06-17T08:00:00");
+    const eventos = [
+      ev("atividade", "2026-06-15T08:00:00"),
+      ev("atividade", new Date(agora.getTime() - 10 * 60000).toISOString()),
+    ];
+    expect(detectarAnomaliaAprendida(eventos, agora).anomalia).toBe(false);
   });
 });
