@@ -13,6 +13,7 @@ import {
   type ResultadoAnomalia,
 } from "@/lib/rotina";
 import { GraficoAtividade } from "@/components/grafico-atividade";
+import { pedirPermissaoNotificacao } from "@/lib/notificacao";
 
 const ESTILO_ALERTA: Record<TipoEvento, { cor: string; icone: string; titulo: string }> = {
   atividade: { cor: "bg-green-600", icone: "💚", titulo: "Atividade Normal" },
@@ -41,6 +42,16 @@ export default function PainelCuidadorPage() {
     motivo: null,
   });
   const [rotina, setRotina] = useState<string | null>(null);
+  const [notifMsg, setNotifMsg] = useState<string | null>(null);
+
+  async function ativarNotificacoes() {
+    const ok = await pedirPermissaoNotificacao();
+    setNotifMsg(
+      ok
+        ? "✓ Notificações ativadas. Você será avisado de quedas e emergências."
+        : "Não foi possível ativar as notificações neste navegador.",
+    );
+  }
 
   useEffect(() => {
     const store = getDataStore();
@@ -93,6 +104,25 @@ export default function PainelCuidadorPage() {
             </div>
           </div>
         )}
+
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <button
+            type="button"
+            onClick={ativarNotificacoes}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800"
+          >
+            <span aria-hidden>🔔</span> Ativar notificações no dispositivo
+          </button>
+          {notifMsg && (
+            <p
+              role="status"
+              aria-live="polite"
+              className="mt-2 text-center text-sm text-zinc-600"
+            >
+              {notifMsg}
+            </p>
+          )}
+        </div>
 
         {anomalia.anomalia && (
           <div
