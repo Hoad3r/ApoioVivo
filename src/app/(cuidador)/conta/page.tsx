@@ -45,6 +45,12 @@ export default function ContaPage() {
             <p className="text-lg font-bold text-zinc-900">{user.email}</p>
           </div>
           <Link
+            href="/cuidadores"
+            className="block rounded-xl bg-blue-700 px-5 py-3 text-center font-bold text-white"
+          >
+            Cuidadores e Familiares
+          </Link>
+          <Link
             href="/painel"
             className="block rounded-xl bg-zinc-100 px-5 py-3 text-center font-bold text-zinc-800"
           >
