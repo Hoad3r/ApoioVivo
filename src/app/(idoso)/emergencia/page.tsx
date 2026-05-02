@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getDataStore } from "@/lib/data";
 import { falar } from "@/lib/voice";
 import { notificarCuidador } from "@/lib/notificacao";
+import { enviarAlertaEmail } from "@/lib/alertar";
 
 export default function EmergenciaPage() {
   const [acionado, setAcionado] = useState(false);
@@ -16,10 +17,9 @@ export default function EmergenciaPage() {
       urgente: true,
     });
     falar("Pedido de ajuda enviado. O cuidador foi avisado e está a caminho.");
-    notificarCuidador(
-      "Apoio Vivo — Emergência",
-      "O idoso acionou o botão de emergência e precisa de ajuda.",
-    );
+    const detalhe = "O idoso acionou o botão de emergência e precisa de ajuda.";
+    notificarCuidador("Apoio Vivo — Emergência", detalhe);
+    enviarAlertaEmail("Emergência", detalhe);
     setAcionado(true);
   }
 

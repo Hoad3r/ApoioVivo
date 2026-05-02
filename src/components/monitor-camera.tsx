@@ -9,6 +9,7 @@ import { infoObjetoEssencial } from "@/lib/vision/objetos-essenciais";
 import { detectarAmbiente } from "@/lib/vision/ambiente";
 import { falar } from "@/lib/voice";
 import { notificarCuidador } from "@/lib/notificacao";
+import { enviarAlertaEmail } from "@/lib/alertar";
 import { getDataStore } from "@/lib/data";
 
 const LIMIAR = 0.6;
@@ -51,12 +52,12 @@ export function MonitorCamera() {
         urgente: true,
       });
       falar("Atenção! Detectamos uma possível queda. O cuidador foi avisado.");
-      notificarCuidador(
-        "Apoio Vivo — Queda detectada",
+      const detalhe =
         origem === "simulada"
           ? "Queda simulada (demonstração)."
-          : "Uma possível queda foi detectada pela câmera.",
-      );
+          : "Uma possível queda foi detectada pela câmera.";
+      notificarCuidador("Apoio Vivo — Queda detectada", detalhe);
+      enviarAlertaEmail("Queda detectada", detalhe);
       setAlertaQueda(true);
       setTimeout(() => setAlertaQueda(false), 6000);
     }
