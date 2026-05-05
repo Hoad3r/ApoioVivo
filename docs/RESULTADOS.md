@@ -10,7 +10,7 @@ Mapeamento dos requisitos especificados no **Projeto Interdisciplinar I** para o
 | RF01 | Detectar quedas em tempo real | ✅ | Monitoramento — análise de pose (MoveNet) + botão "simular queda"; gera alerta ao cuidador |
 | RF02 | Reconhecer objetos/ambientes | ✅ | Monitoramento — COCO-SSD (TensorFlow.js), nomes em PT-BR com voz |
 | RF03 | Enviar lembretes programados | ✅ | Tela Lembretes + avisos contextuais por voz no horário |
-| RF04 | Notificar cuidadores em emergência | ✅ | Tela Emergência (botão LIGAR) → alerta no Painel do Cuidador |
+| RF04 | Notificar cuidadores em emergência | ✅ | Botão LIGAR / queda → alerta no Painel + **notificação no navegador** + **e-mail automático** (Resend) aos cuidadores cadastrados |
 | RF05 | Mensagens em áudio e texto | ✅ | Web Speech API (voz) + textos grandes em todas as telas |
 | RF06 | Registrar atividades e eventos | ✅ | Histórico + log de eventos consumido pelo Painel do Cuidador |
 | RF07 | Personalizar lembretes (texto, hora, recorrência) | ✅ | CRUD completo de lembretes |
@@ -30,15 +30,31 @@ Mapeamento dos requisitos especificados no **Projeto Interdisciplinar I** para o
 - **Lembretes** — lista com áudio e CRUD.
 - **Emergência** — botão LIGAR.
 - **Painel do Cuidador** — atividade semanal e alertas recentes.
-- **Monitoramento** (nova) — câmera com objetos + queda + saudação facial.
+- **Monitoramento** (nova) — câmera com objetos + queda + reconhecimento facial + ambiente.
+- **Cadastrar Rostos** (nova) — captura facial do idoso e cuidadores.
+- **Conta / Cuidadores** (novas) — login e cadastro de quem recebe os alertas.
 
-## Pontos do PI-II (SP3) atendidos
+## Desafios técnicos do SP3 (todos atendidos)
 
-- Interface simplificada e acessível ✅
-- Reconhecimento/saudação ao ver a pessoa ✅
-- Identificação de objetos essenciais ✅
-- Lembretes contextuais ✅
-- Detecção de rotina e anomalias (Painel do Cuidador) ✅
+1. **Interface simplificada e acessível** — ícones grandes, alto contraste, voz de
+   entrada (comando) e de saída, pouco texto.
+2. **Reconhecimento facial para personalização** — identifica **quem** está na câmera
+   (idoso × cuidador) com face-api.js e saúda pelo nome.
+3. **Identificação de objetos essenciais** — COCO-SSD nomeia objetos e dá informação
+   personalizada (garrafa → "remédio das 8h"; celular → "ligar para a família").
+4. **Lembretes contextuais inteligentes** — por horário e por **ambiente detectado**
+   (cozinha no almoço → "hora de almoçar, beba água").
+5. **Detecção de rotina e anomalias** — **aprende** os horários ativos do idoso e
+   sinaliza inatividade fora do padrão; notifica o cuidador.
+
+## Backend de comunicação com familiares
+
+- **Autenticação** do cuidador (Supabase Auth) — login e cadastro de conta.
+- **Cadastro de cuidadores/familiares** que recebem os alertas (Supabase + RLS).
+- **Envio automático de e-mail** (Resend) em quedas e emergências, além da notificação
+  no navegador (Web Notifications API).
+- Funciona em **modo local** sem backend (degrada com segurança); o envio real ativa ao
+  preencher o `.env.local` (veja `.env.example` e `src/lib/supabase/schema.sql`).
 
 ## Decisão de plataforma
 
@@ -48,5 +64,5 @@ instalável e demonstrável ao vivo, cobrindo os mesmos requisitos funcionais.
 
 ## Qualidade
 
-- 19 testes de lógica (Vitest) passando.
+- 34 testes de lógica (Vitest) passando.
 - `tsc --noEmit` sem erros · build de produção sem erros.
