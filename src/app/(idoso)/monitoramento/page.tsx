@@ -25,6 +25,12 @@ export default function MonitoramentoPage() {
         <h1 className="text-2xl font-bold">Monitoramento</h1>
       </header>
       <div className="px-5 py-6">
+        <Link
+          href="/rostos"
+          className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3 font-semibold text-blue-700 hover:bg-blue-100"
+        >
+          <span aria-hidden>👤</span> Cadastrar rostos para reconhecimento
+        </Link>
         <MonitorCamera />
       </div>
     </main>

@@ -10,6 +10,8 @@ import { detectarAmbiente } from "@/lib/vision/ambiente";
 import { falar } from "@/lib/voice";
 import { notificarCuidador } from "@/lib/notificacao";
 import { enviarAlertaEmail } from "@/lib/alertar";
+import { descritorDe } from "@/lib/face/face-api";
+import { identificar, listarRostos } from "@/lib/face/registro";
 import { getDataStore } from "@/lib/data";
 
 const LIMIAR = 0.6;
@@ -136,13 +138,34 @@ export function MonitorCamera() {
             registrarQueda("real");
           }
 
-          const nariz = keypoints.find((k) => k.name === "nose");
-          if (nariz && (nariz.score ?? 0) > 0.4 && !saudou.current) {
-            saudou.current = true;
-            const nome = getDataStore().getUsuario().nome;
-            const msg = `Olá, ${nome}! Que bom ver você.`;
-            setSaudacaoFacial(msg);
-            falar(msg);
+          if (!saudou.current) {
+            const rostos = listarRostos();
+            if (rostos.length > 0) {
+              // Reconhecimento facial real: identifica quem está na câmera.
+              const desc = await descritorDe(v);
+              if (desc) {
+                const reconhecido = identificar(desc, rostos);
+                if (reconhecido) {
+                  saudou.current = true;
+                  const saud =
+                    reconhecido.papel === "idoso"
+                      ? `Olá, ${reconhecido.nome}! Que bom ver você.`
+                      : `Olá, ${reconhecido.nome}! Bem-vindo.`;
+                  setSaudacaoFacial(`👋 ${saud}`);
+                  falar(saud);
+                }
+              }
+            } else {
+              // Sem rostos cadastrados: saúda ao detectar a pessoa (via pose).
+              const nariz = keypoints.find((k) => k.name === "nose");
+              if (nariz && (nariz.score ?? 0) > 0.4) {
+                saudou.current = true;
+                const nome = getDataStore().getUsuario().nome;
+                const msg = `Olá, ${nome}! Que bom ver você.`;
+                setSaudacaoFacial(`👋 ${msg}`);
+                falar(msg);
+              }
+            }
           }
         } catch {
           /* frame de pose com erro: ignora */
