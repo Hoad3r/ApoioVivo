@@ -1,16 +1,20 @@
 import "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import type { Keypoint } from "./queda";
+import { garantirBackend } from "./tf-backend";
 
 let detectorPromise: Promise<poseDetection.PoseDetector> | null = null;
 
 /** Carrega o detector de pose MoveNet uma única vez (lazy singleton). */
 export function carregarDetectorPose(): Promise<poseDetection.PoseDetector> {
   if (!detectorPromise) {
-    detectorPromise = poseDetection.createDetector(
-      poseDetection.SupportedModels.MoveNet,
-      { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING },
-    );
+    detectorPromise = (async () => {
+      await garantirBackend();
+      return poseDetection.createDetector(
+        poseDetection.SupportedModels.MoveNet,
+        { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING },
+      );
+    })();
   }
   return detectorPromise;
 }
