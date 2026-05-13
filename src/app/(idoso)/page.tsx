@@ -2,26 +2,15 @@ import { BotaoGrande } from "@/components/botao-grande";
 import { AltoContrasteToggle } from "@/components/alto-contraste-toggle";
 import { ProximoLembrete } from "@/components/proximo-lembrete";
 import { ComandoVoz } from "@/components/comando-voz";
-
-function saudacao(d = new Date()): string {
-  const h = d.getHours();
-  if (h < 12) return "Bom dia";
-  if (h < 18) return "Boa tarde";
-  return "Boa noite";
-}
+import { AssistenteConversa } from "@/components/assistente-conversa";
+import { CabecalhoInicio } from "@/components/cabecalho-inicio";
 
 export default function Inicio() {
-  // O nome virá da camada de dados (seed) na próxima etapa.
-  const nome = "Maria";
-
   return (
     <main>
       <header className="rounded-b-3xl bg-blue-800 px-6 pb-8 pt-7 text-white">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-lg sm:text-xl">{saudacao()},</p>
-            <p className="text-3xl font-bold sm:text-4xl">{nome}</p>
-          </div>
+          <CabecalhoInicio />
           <AltoContrasteToggle />
         </div>
       </header>
@@ -33,10 +22,11 @@ export default function Inicio() {
           </span>
           <div>
             <p className="text-xl font-bold">Tudo bem!</p>
-            <p className="text-sm opacity-90">Monitoramento ativo</p>
+            <p className="text-sm opacity-90">Estou aqui com você</p>
           </div>
         </div>
 
+        <AssistenteConversa />
         <ComandoVoz />
 
         <BotaoGrande href="/lembretes" label="Lembretes" icon="🔔" variante="azul" />
