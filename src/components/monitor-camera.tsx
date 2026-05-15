@@ -3,11 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { detectarObjetos, type Predicao } from "@/lib/vision/objetos";
 import { detectarPose } from "@/lib/vision/pose";
-import { avaliarQueda } from "@/lib/vision/queda";
+import { diagnosticarQueda, type DiagnosticoQueda } from "@/lib/vision/queda";
+import type { Keypoint } from "@/lib/vision/queda";
+import {
+  detectarQuedaMovimento,
+  type QuadroPose,
+} from "@/lib/vision/queda-movimento";
 import { traduzir } from "@/lib/vision/traducoes";
 import { infoObjetoEssencial } from "@/lib/vision/objetos-essenciais";
 import { detectarAmbiente } from "@/lib/vision/ambiente";
 import { falar } from "@/lib/voice";
+import { frase, saudacoes } from "@/lib/frases";
+import { horaBrasilia } from "@/lib/hora";
+import { nomeDaPessoa } from "@/lib/pessoa";
 import { notificarCuidador } from "@/lib/notificacao";
 import { enviarAlertaEmail } from "@/lib/alertar";
 import { descritorDe } from "@/lib/face/face-api";
@@ -15,7 +23,7 @@ import { identificar, listarRostos } from "@/lib/face/registro";
 import { getDataStore } from "@/lib/data";
 
 const LIMIAR = 0.6;
-const FRAMES_PARA_QUEDA = 3;
+const FRAMES_PARA_QUEDA = 2;
 const DEBOUNCE_QUEDA_MS = 15000;
 
 export function MonitorCamera() {
@@ -29,6 +37,15 @@ export function MonitorCamera() {
   );
   const saudou = useRef(false);
   const alertouCozinha = useRef(false);
+  const historico = useRef<QuadroPose[]>([]);
+  const ultimoCentro = useRef({ cx: 0.5, cy: 0.5, alturaRel: 0.6 });
+  const debugRef = useRef(false);
+  const [debug, setDebug] = useState(false);
+  const [diag, setDiag] = useState<
+    | (DiagnosticoQueda & { frames: number; mov: boolean; cy: number })
+    | null
+  >(null);
+  const [erroPose, setErroPose] = useState<string | null>(null);
   const [status, setStatus] = useState("Carregando modelos de IA…");
   const [objetos, setObjetos] = useState<string[]>([]);
   const [alertaQueda, setAlertaQueda] = useState(false);
@@ -53,7 +70,10 @@ export function MonitorCamera() {
             : "Queda detectada pela câmera",
         urgente: true,
       });
-      falar("Atenção! Detectamos uma possível queda. O cuidador foi avisado.");
+      falar(
+        "Tudo bem? Parece que você caiu. Já avisei alguém para te ajudar.",
+        { urgente: true },
+      );
       const detalhe =
         origem === "simulada"
           ? "Queda simulada (demonstração)."
@@ -90,6 +110,37 @@ export function MonitorCamera() {
       }
     }
 
+    // Desenha os pontos do corpo que a IA enxergou (modo depuração).
+    function desenharPose(keypoints: Keypoint[]) {
+      const v = videoRef.current;
+      const c = canvasRef.current;
+      if (!v || !c) return;
+      if (!c.width || !c.height) {
+        c.width = v.videoWidth;
+        c.height = v.videoHeight;
+      }
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
+      const relevantes = new Set([
+        "nose",
+        "left_eye",
+        "right_eye",
+        "left_shoulder",
+        "right_shoulder",
+        "left_hip",
+        "right_hip",
+      ]);
+      for (const k of keypoints) {
+        const conf = k.score ?? 0;
+        if (conf < 0.3) continue;
+        const destaque = k.name ? relevantes.has(k.name) : false;
+        ctx.beginPath();
+        ctx.arc(k.x, k.y, destaque ? 7 : 4, 0, Math.PI * 2);
+        ctx.fillStyle = destaque ? "#16a34a" : "#a3e635";
+        ctx.fill();
+      }
+    }
+
     async function loop() {
       if (!ativo) return;
       const v = videoRef.current;
@@ -100,23 +151,32 @@ export function MonitorCamera() {
           desenhar(preds);
           const validos = preds.filter((p) => p.score >= LIMIAR);
           const classes = validos.map((p) => p.class);
-          setObjetos([...new Set(validos.map((p) => traduzir(p.class)))]);
+          // A própria pessoa não é um "objeto" — não mostra nem anuncia "pessoa".
+          const objetosUteis = validos.filter((p) => p.class !== "person");
+          setObjetos([
+            ...new Set(objetosUteis.map((p) => traduzir(p.class))),
+          ]);
 
-          const principal = [...validos].sort((a, b) => b.score - a.score)[0];
+          // Só fala quando há informação que de fato ajuda (remédio, telefone…).
+          // Nada de narrar "isto é X" para cada coisa — isso é assistir, não vigiar.
+          const principal = [...objetosUteis]
+            .sort((a, b) => b.score - a.score)
+            .find((p) => infoObjetoEssencial(p.class));
           if (principal && principal.class !== ultimoFalado.current) {
             ultimoFalado.current = principal.class;
             const info = infoObjetoEssencial(principal.class);
-            const msg = info ?? `Isto é: ${traduzir(principal.class)}`;
-            setInfoObjeto(msg);
-            falar(msg);
+            if (info) {
+              setInfoObjeto(info);
+              falar(info);
+            }
           }
 
           const amb = detectarAmbiente(classes);
           setAmbiente(amb);
           if (amb === "cozinha" && !alertouCozinha.current) {
             alertouCozinha.current = true;
-            const nome = getDataStore().getUsuario().nome;
-            const hora = new Date().getHours();
+            const nome = nomeDaPessoa();
+            const hora = horaBrasilia();
             const almoco = hora >= 11 && hora <= 14;
             const msg = almoco
               ? `Olá, ${nome}! Você está na cozinha e já passa do meio-dia. É uma ótima hora para almoçar. Lembre-se de beber água também.`
@@ -131,9 +191,47 @@ export function MonitorCamera() {
         try {
           const keypoints = await detectarPose(v);
           if (!ativo) return;
-          const caiu = avaliarQueda(keypoints);
-          framesQueda.current = caiu ? framesQueda.current + 1 : 0;
-          if (framesQueda.current >= FRAMES_PARA_QUEDA) {
+          const d = diagnosticarQueda(keypoints);
+
+          // Resumo de posição do corpo (normalizado) para análise de movimento.
+          const largura = v.videoWidth || 1;
+          const altura = v.videoHeight || 1;
+          const visiveis = keypoints.filter((k) => (k.score ?? 0) >= 0.3);
+          const presente = visiveis.length >= 3;
+          if (presente) {
+            const xs = visiveis.map((k) => k.x);
+            const ys = visiveis.map((k) => k.y);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+            ultimoCentro.current = {
+              cx: (minX + maxX) / 2 / largura,
+              cy: (minY + maxY) / 2 / altura,
+              alturaRel: (maxY - minY) / altura,
+            };
+          }
+          historico.current.push({
+            t: Date.now(),
+            presente,
+            ...ultimoCentro.current,
+          });
+          if (historico.current.length > 25) historico.current.shift();
+          const quedaMov = detectarQuedaMovimento(historico.current);
+
+          framesQueda.current = d.caiu ? framesQueda.current + 1 : 0;
+          if (debugRef.current) {
+            desenharPose(keypoints);
+            setDiag({
+              ...d,
+              frames: framesQueda.current,
+              mov: quedaMov,
+              cy: ultimoCentro.current.cy,
+            });
+            setErroPose(null);
+          }
+          // Queda confirmada por movimento (instantâneo) OU pose horizontal sustentada.
+          if (quedaMov || framesQueda.current >= FRAMES_PARA_QUEDA) {
             framesQueda.current = 0;
             registrarQueda("real");
           }
@@ -147,10 +245,14 @@ export function MonitorCamera() {
                 const reconhecido = identificar(desc, rostos);
                 if (reconhecido) {
                   saudou.current = true;
+                  const hora = horaBrasilia();
                   const saud =
                     reconhecido.papel === "idoso"
-                      ? `Olá, ${reconhecido.nome}! Que bom ver você.`
-                      : `Olá, ${reconhecido.nome}! Bem-vindo.`;
+                      ? frase("saud-idoso", saudacoes(reconhecido.nome, hora))
+                      : frase("saud-cuidador", [
+                          `Olá, ${reconhecido.nome}! Bem-vindo.`,
+                          `Oi, ${reconhecido.nome}! Que bom ter você aqui.`,
+                        ]);
                   setSaudacaoFacial(`👋 ${saud}`);
                   falar(saud);
                 }
@@ -160,15 +262,20 @@ export function MonitorCamera() {
               const nariz = keypoints.find((k) => k.name === "nose");
               if (nariz && (nariz.score ?? 0) > 0.4) {
                 saudou.current = true;
-                const nome = getDataStore().getUsuario().nome;
-                const msg = `Olá, ${nome}! Que bom ver você.`;
+                const nome = nomeDaPessoa();
+                const hora = horaBrasilia();
+                const msg = frase("saud-pose", saudacoes(nome, hora));
                 setSaudacaoFacial(`👋 ${msg}`);
                 falar(msg);
               }
             }
           }
-        } catch {
-          /* frame de pose com erro: ignora */
+        } catch (e) {
+          // Em depuração, mostra o erro em vez de engoli-lo silenciosamente.
+          if (debugRef.current) {
+            setErroPose(e instanceof Error ? e.message : String(e));
+            console.error("Erro na detecção de pose/face:", e);
+          }
         }
       }
       timer = setTimeout(loop, 800);
@@ -184,7 +291,7 @@ export function MonitorCamera() {
         if (!v) return;
         v.srcObject = stream;
         await v.play();
-        setStatus("Monitorando: objetos e quedas");
+        setStatus("Estou aqui com você 💙");
         loop();
       } catch {
         setStatus(
@@ -209,13 +316,13 @@ export function MonitorCamera() {
           role="alert"
           className="rounded-2xl bg-red-600 px-5 py-4 text-center text-lg font-bold text-white"
         >
-          🚨 Queda detectada! O cuidador foi avisado.
+          🚨 Você caiu? Fique tranquilo, já pedi ajuda para você.
         </div>
       )}
 
       {saudacaoFacial && (
         <div className="rounded-2xl bg-green-600 px-5 py-3 text-center text-lg font-bold text-white">
-          👋 {saudacaoFacial}
+          {saudacaoFacial}
         </div>
       )}
 
@@ -273,6 +380,73 @@ export function MonitorCamera() {
       >
         🧪 Simular queda (demonstração)
       </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          const novo = !debug;
+          setDebug(novo);
+          debugRef.current = novo;
+          if (!novo) setDiag(null);
+        }}
+        className="w-full rounded-2xl border-2 border-zinc-300 bg-zinc-50 py-3 font-bold text-zinc-700 hover:bg-zinc-100"
+      >
+        🔍 {debug ? "Ocultar" : "Mostrar"} raciocínio da IA
+      </button>
+
+      {debug && (
+        <div className="space-y-1 rounded-2xl bg-zinc-900 px-4 py-3 font-mono text-sm text-zinc-100">
+          <p className="font-bold text-zinc-300">🔍 Raciocínio — detecção de queda</p>
+          {erroPose && (
+            <p className="text-red-400">
+              ⚠️ Erro na pose: {erroPose}
+            </p>
+          )}
+          {diag ? (
+            <>
+              <p>
+                Pontos vistos ({diag.pontosVisiveis.length}):{" "}
+                {diag.pontosVisiveis.length
+                  ? diag.pontosVisiveis.map((n) => NOME_PT[n] ?? n).join(", ")
+                  : "nenhum — a IA não está te enxergando"}
+              </p>
+              <p>Eixo usado: {diag.eixo}</p>
+              <p>
+                Horizontal (dx): <strong>{Math.round(diag.dx)}</strong> ·
+                Vertical (dy): <strong>{Math.round(diag.dy)}</strong>
+              </p>
+              <p>
+                Regra: queda quando dx &gt; {Math.round(diag.limiar)} (= dy × 0,8)
+              </p>
+              <p>
+                Caiu neste frame:{" "}
+                <strong className={diag.caiu ? "text-red-400" : "text-green-400"}>
+                  {diag.caiu ? "SIM" : "não"}
+                </strong>{" "}
+                · frames seguidos: {diag.frames}/{FRAMES_PARA_QUEDA}
+              </p>
+              <p>
+                Altura na tela (cy): {diag.cy.toFixed(2)} · queda por movimento:{" "}
+                <strong className={diag.mov ? "text-red-400" : "text-green-400"}>
+                  {diag.mov ? "SIM" : "não"}
+                </strong>
+              </p>
+            </>
+          ) : (
+            <p className="text-zinc-400">Aguardando leitura da câmera…</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+const NOME_PT: Record<string, string> = {
+  nose: "nariz",
+  left_eye: "olho esq.",
+  right_eye: "olho dir.",
+  left_shoulder: "ombro esq.",
+  right_shoulder: "ombro dir.",
+  left_hip: "quadril esq.",
+  right_hip: "quadril dir.",
+};
