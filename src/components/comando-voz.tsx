@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { falar } from "@/lib/voice";
+import { interpretarComandoLembrete } from "@/lib/comando-lembrete";
+import { minutosBrasilia, minutosParaHHMM } from "@/lib/hora";
+import { getDataStore } from "@/lib/data";
 
 const COMANDOS: { palavras: string[]; rota: string; nome: string }[] = [
   { palavras: ["lembrete", "lembretes"], rota: "/lembretes", nome: "Lembretes" },
@@ -61,10 +64,30 @@ export function ComandoVoz() {
     reco.interimResults = false;
     reco.maxAlternatives = 1;
     setOuvindo(true);
-    setFeedback("Ouvindo… diga: lembretes, emergência, câmera, cuidador…");
+    setFeedback(
+      'Ouvindo… diga "lembrete para daqui a 5 minutos", ou: lembretes, câmera, emergência…',
+    );
 
     reco.onresult = (e) => {
-      const texto = (e.results[0][0].transcript || "").toLowerCase();
+      const original = e.results[0][0].transcript || "";
+      const texto = original.toLowerCase();
+
+      // 1) Criar lembrete por voz ("lembrete para daqui a 5 minutos").
+      const lembrete = interpretarComandoLembrete(original);
+      if (lembrete) {
+        const hora = minutosParaHHMM(minutosBrasilia() + lembrete.minutosAFrente);
+        getDataStore().addLembrete({
+          titulo: lembrete.titulo,
+          hora,
+          recorrencia: "unico",
+        });
+        const msg = `Combinado! Vou te lembrar de ${lembrete.titulo.toLowerCase()} às ${hora}.`;
+        setFeedback(`✅ ${msg}`);
+        falar(msg);
+        return;
+      }
+
+      // 2) Navegação por voz.
       const cmd = COMANDOS.find((c) => c.palavras.some((p) => texto.includes(p)));
       if (cmd) {
         setFeedback(`Abrindo: ${cmd.nome}`);

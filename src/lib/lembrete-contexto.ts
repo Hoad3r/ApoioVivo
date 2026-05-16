@@ -1,4 +1,5 @@
 import type { Lembrete } from "@/lib/types";
+import { mensagemLembrete } from "./lembrete-regras";
 
 /** Converte "HH:MM" em minutos desde a meia-noite. */
 export function horaParaMinutos(hora: string): number {
@@ -22,17 +23,7 @@ export function proximoLembrete(
   return ordenados.find((l) => horaParaMinutos(l.hora) >= minAgora) ?? ordenados[0];
 }
 
-/** Mensagem contextual falada para um lembrete (RF03: lembretes contextuais). */
+/** Mensagem contextual falada para um lembrete (RF03). Delegada às regras. */
 export function mensagemContextual(nome: string, lembrete: Lembrete): string {
-  const base = `Olá, ${nome}! Está na hora de ${lembrete.titulo.toLowerCase()}.`;
-  if (/almo|jantar|comer/i.test(lembrete.titulo)) {
-    return `${base} Lembre-se de beber água também.`;
-  }
-  if (/rem[eé]dio/i.test(lembrete.titulo)) {
-    return `${base} É importante para a sua saúde.`;
-  }
-  if (/[aá]gua/i.test(lembrete.titulo)) {
-    return `${base} Hidratar-se faz bem.`;
-  }
-  return base;
+  return mensagemLembrete(nome, lembrete, []);
 }
