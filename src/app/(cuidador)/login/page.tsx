@@ -34,7 +34,7 @@ export default function LoginPage() {
       setModo("entrar");
       return;
     }
-    router.push("/conta");
+    router.push("/");
   }
 
   return (
