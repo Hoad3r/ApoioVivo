@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BotaoGrande } from "@/components/botao-grande";
 import { AltoContrasteToggle } from "@/components/alto-contraste-toggle";
 import { ProximoLembrete } from "@/components/proximo-lembrete";
@@ -11,7 +12,16 @@ export default function Inicio() {
       <header className="rounded-b-3xl bg-blue-800 px-6 pb-8 pt-7 text-white">
         <div className="flex items-start justify-between gap-3">
           <CabecalhoInicio />
-          <AltoContrasteToggle />
+          <div className="flex items-center gap-1">
+            <AltoContrasteToggle />
+            <Link
+              href="/configurar"
+              aria-label="Configurações"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-xl hover:bg-white/25"
+            >
+              ⚙️
+            </Link>
+          </div>
         </div>
       </header>
 

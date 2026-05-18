@@ -13,9 +13,11 @@ const K_LEMBRETES = "apoiovivo:lembretes";
 const K_EVENTOS = "apoiovivo:eventos";
 
 /** Bump para forçar a reaplicação do seed em navegadores com dados antigos. */
-const VERSAO = "2";
+const VERSAO = "3";
 
-const SEED_USUARIO: Usuario = { id: "u1", nome: "Maria", idade: 78 };
+// Sem nome semente: a pessoa assistida é definida na configuração do dispositivo
+// (perfil do idoso). Até lá, a saudação mostra "Olá!".
+const SEED_USUARIO: Usuario = { id: "u1", nome: "", idade: 0 };
 
 const SEED_LEMBRETES: Lembrete[] = [
   { id: "l1", titulo: "Tomar remédio para pressão", hora: "08:00", recorrencia: "diario" },
@@ -30,7 +32,7 @@ const SEED_ALERTAS: Evento[] = [
   {
     id: "e1",
     tipo: "atividade",
-    descricao: "Maria está se movimentando na cozinha",
+    descricao: "Movimento detectado na cozinha",
     criadoEm: new Date().toISOString(),
     urgente: false,
   },

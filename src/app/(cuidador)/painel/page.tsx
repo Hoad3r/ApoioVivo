@@ -14,6 +14,7 @@ import {
 } from "@/lib/rotina";
 import { GraficoAtividade } from "@/components/grafico-atividade";
 import { pedirPermissaoNotificacao } from "@/lib/notificacao";
+import { carregarPerfil, type PerfilIdoso } from "@/lib/idoso/perfil";
 
 const ESTILO_ALERTA: Record<TipoEvento, { cor: string; icone: string; titulo: string }> = {
   atividade: { cor: "bg-green-600", icone: "💚", titulo: "Atividade Normal" },
@@ -34,6 +35,7 @@ function formatar(criadoEm: string): string {
 
 export default function PainelCuidadorPage() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [perfil, setPerfil] = useState<PerfilIdoso | null>(null);
   const [dados, setDados] = useState<DiaAtividade[]>([]);
   const [media, setMedia] = useState(0);
   const [alertas, setAlertas] = useState<Evento[]>([]);
@@ -57,6 +59,7 @@ export default function PainelCuidadorPage() {
     const store = getDataStore();
     const eventos = store.listEventos();
     setUsuario(store.getUsuario());
+    carregarPerfil().then(setPerfil);
     const resumo = resumoAtividadeSemanal(eventos);
     setDados(resumo);
     setMedia(mediaAtividade(resumo));
@@ -96,9 +99,13 @@ export default function PainelCuidadorPage() {
               👤
             </span>
             <div>
-              <p className="text-lg font-bold text-zinc-900">{usuario.nome}</p>
+              <p className="text-lg font-bold text-zinc-900">
+                {perfil?.nome || usuario.nome || "Pessoa assistida"}
+              </p>
               <p className="text-sm text-zinc-500">
-                {usuario.idade} anos ·{" "}
+                {(perfil?.idade ?? (usuario.idade || null)) != null && (
+                  <>{perfil?.idade ?? usuario.idade} anos · </>
+                )}
                 <span className="font-medium text-green-600">● Online agora</span>
               </p>
             </div>

@@ -29,11 +29,6 @@ export default function LoginPage() {
       setMsg(resultado.error.message);
       return;
     }
-    if (modo === "cadastrar") {
-      setMsg("Conta criada! Agora faça login.");
-      setModo("entrar");
-      return;
-    }
     router.push("/");
   }
 
@@ -43,8 +38,12 @@ export default function LoginPage() {
         ← Início
       </Link>
       <h1 className="mt-4 text-2xl font-bold text-zinc-900">
-        {modo === "entrar" ? "Entrar" : "Criar conta"} — Cuidador
+        {modo === "entrar" ? "Entrar" : "Criar conta"} — Apoio Vivo
       </h1>
+      <p className="mt-1 text-sm text-zinc-600">
+        Conta deste dispositivo. Use na primeira configuração; depois o aparelho
+        fica pronto para a pessoa assistida.
+      </p>
 
       {!temSupabase() ? (
         <div className="mt-6 rounded-2xl bg-amber-50 p-4 text-amber-900">

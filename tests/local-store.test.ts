@@ -18,8 +18,8 @@ beforeEach(() => {
 });
 
 describe("LocalStore", () => {
-  it("popula o seed com a usuária Maria (78)", () => {
-    expect(store.getUsuario()).toMatchObject({ nome: "Maria", idade: 78 });
+  it("inicia sem nome semente (definido na configuração do dispositivo)", () => {
+    expect(store.getUsuario()).toMatchObject({ nome: "", idade: 0 });
   });
 
   it("lista os 5 lembretes do seed", () => {
