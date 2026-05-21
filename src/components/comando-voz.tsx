@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { falar } from "@/lib/voice";
 import { interpretarComandoLembrete } from "@/lib/comando-lembrete";
+import { querCadastrarCuidador } from "@/lib/comando-cuidador";
 import { minutosBrasilia, minutosParaHHMM } from "@/lib/hora";
 import { getDataStore } from "@/lib/data";
 
@@ -21,11 +22,6 @@ const COMANDOS: { palavras: string[]; rota: string; nome: string }[] = [
   },
   { palavras: ["histórico", "historico"], rota: "/historico", nome: "Histórico" },
   { palavras: ["início", "inicio", "casa"], rota: "/", nome: "Início" },
-  {
-    palavras: ["cuidador", "alertas", "painel"],
-    rota: "/painel",
-    nome: "Painel do Cuidador",
-  },
 ];
 
 // Tipagem mínima da Web Speech API (não incluída na lib DOM padrão).
@@ -87,7 +83,15 @@ export function ComandoVoz() {
         return;
       }
 
-      // 2) Navegação por voz.
+      // 2) Cadastrar um cuidador por voz.
+      if (querCadastrarCuidador(original)) {
+        setFeedback("Vamos cadastrar um cuidador…");
+        falar("Vamos cadastrar um cuidador");
+        router.push("/cuidadores?voz=1");
+        return;
+      }
+
+      // 3) Navegação por voz.
       const cmd = COMANDOS.find((c) => c.palavras.some((p) => texto.includes(p)));
       if (cmd) {
         setFeedback(`Abrindo: ${cmd.nome}`);

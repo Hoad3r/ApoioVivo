@@ -10,6 +10,8 @@ import {
   removerCuidador,
   type Cuidador,
 } from "@/lib/supabase/cuidadores";
+import { criarConvite } from "@/lib/supabase/convites";
+import { CadastroCuidadorVoz } from "@/components/cadastro-cuidador-voz";
 
 const FORM_VAZIO = { nome: "", parentesco: "", email: "", telefone: "" };
 
@@ -18,6 +20,37 @@ export default function CuidadoresPage() {
   const [lista, setLista] = useState<Cuidador[]>([]);
   const [form, setForm] = useState(FORM_VAZIO);
   const [msg, setMsg] = useState<string | null>(null);
+  const [autoVoz] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("voz") === "1",
+  );
+  const [linkConvite, setLinkConvite] = useState<string | null>(null);
+  const [gerandoLink, setGerandoLink] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+
+  async function gerarLink() {
+    setGerandoLink(true);
+    setMsg(null);
+    try {
+      setLinkConvite(await criarConvite());
+    } catch {
+      setMsg("Erro ao gerar o link. Verifique se executou o schema.sql no Supabase.");
+    } finally {
+      setGerandoLink(false);
+    }
+  }
+
+  async function copiarLink() {
+    if (!linkConvite) return;
+    try {
+      await navigator.clipboard.writeText(linkConvite);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      /* sem clipboard: o link continua visível para cópia manual */
+    }
+  }
 
   const recarregar = useCallback(async () => {
     try {
@@ -60,8 +93,8 @@ export default function CuidadoresPage() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 py-10">
-      <Link href="/conta" className="text-blue-700">
-        ← Minha conta
+      <Link href="/configurar" className="text-blue-700">
+        ← Configurações
       </Link>
       <h1 className="mt-4 text-2xl font-bold text-zinc-900">
         Cuidadores e Familiares
@@ -88,11 +121,48 @@ export default function CuidadoresPage() {
         </div>
       ) : (
         <>
+          <section className="mt-6 rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="text-lg font-bold">Cadastrar por voz</h2>
+            <p className="mb-3 text-sm text-zinc-600">
+              Diga o nome e o e-mail; o app cadastra para você.
+            </p>
+            <CadastroCuidadorVoz auto={autoVoz} onCadastrado={recarregar} />
+          </section>
+
+          <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="text-lg font-bold">Convidar por link</h2>
+            <p className="mb-3 text-sm text-zinc-600">
+              Gere um link e envie ao familiar; ele preenche os próprios dados.
+            </p>
+            <button
+              type="button"
+              onClick={gerarLink}
+              disabled={gerandoLink}
+              className="w-full rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60"
+            >
+              {gerandoLink ? "Gerando…" : "🔗 Gerar link de convite"}
+            </button>
+            {linkConvite && (
+              <div className="mt-3 space-y-2">
+                <p className="break-all rounded-xl bg-zinc-100 p-3 text-sm text-zinc-700">
+                  {linkConvite}
+                </p>
+                <button
+                  type="button"
+                  onClick={copiarLink}
+                  className="w-full rounded-xl border border-blue-300 bg-blue-50 py-2 text-sm font-medium text-blue-700"
+                >
+                  {copiado ? "✓ Copiado!" : "Copiar link"}
+                </button>
+              </div>
+            )}
+          </section>
+
           <form
             onSubmit={adicionar}
-            className="mt-6 space-y-3 rounded-2xl bg-white p-4 shadow-sm"
+            className="mt-4 space-y-3 rounded-2xl bg-white p-4 shadow-sm"
           >
-            <h2 className="text-lg font-bold">Adicionar</h2>
+            <h2 className="text-lg font-bold">Adicionar manualmente</h2>
             <input
               value={form.nome}
               onChange={(e) => setForm({ ...form, nome: e.target.value })}
