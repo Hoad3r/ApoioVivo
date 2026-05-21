@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-dvh bg-zinc-200 antialiased">
+      <body className={`${GeistSans.className} min-h-dvh bg-teal-50 antialiased`}>
         <script
           dangerouslySetInnerHTML={{
             __html:

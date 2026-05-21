@@ -6,8 +6,8 @@ html {
 }
 
 body {
-  background: #fafafa;
-  color: #18181b;
+  background: #f0fdfa; /* teal-50 */
+  color: #0f172a;      /* slate-900 */
 }
 
 /* Foco visível forte em todos os controles (WCAG 2.4.7) */
@@ -40,4 +40,24 @@ body {
 }
 .alto-contraste :focus-visible {
   outline: 4px solid #ffeb3b;
+}
+
+/* Alto contraste: superfícies do tema Verde Cuidado viram preto/contorno branco */
+.alto-contraste .bg-teal-50,
+.alto-contraste .bg-teal-100,
+.alto-contraste .bg-teal-200,
+.alto-contraste [class*="from-teal-"],
+.alto-contraste [class*="to-teal-"] {
+  background: #000 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 2px #fff !important;
+}
+.alto-contraste .text-teal-700,
+.alto-contraste .text-teal-600,
+.alto-contraste .text-teal-800,
+.alto-contraste .border-teal-100,
+.alto-contraste .border-teal-200 {
+  color: #fff !important;
+  border-color: #fff !important;
 }
