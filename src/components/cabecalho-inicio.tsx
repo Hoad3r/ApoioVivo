@@ -20,7 +20,7 @@ export function CabecalhoInicio() {
   return (
     <div>
       <p className="text-lg sm:text-xl">{saudacao(horaBrasilia())},</p>
-      <p className="text-3xl font-bold sm:text-4xl">{nome || "Olá!"}</p>
+      <p className="text-3xl font-extrabold sm:text-4xl">{nome || "Olá!"}</p>
     </div>
   );
 }
