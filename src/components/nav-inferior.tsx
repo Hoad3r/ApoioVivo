@@ -16,7 +16,7 @@ export function NavInferior() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed bottom-0 left-1/2 z-10 w-full max-w-md -translate-x-1/2 border-t border-zinc-200 bg-white sm:max-w-lg"
+      className="fixed bottom-0 left-1/2 z-10 w-full max-w-md -translate-x-1/2 border-t border-zinc-200 bg-white sm:max-w-lg lg:hidden"
     >
       <ul className="flex">
         {ITENS.map((it) => {
@@ -28,7 +28,7 @@ export function NavInferior() {
                 href={it.href}
                 aria-current={ativo ? "page" : undefined}
                 className={`flex flex-col items-center gap-1 py-3 text-sm font-medium ${
-                  ativo ? "text-blue-700" : "text-zinc-500"
+                  ativo ? "text-teal-700" : "text-zinc-500"
                 }`}
               >
                 <span aria-hidden className="text-2xl">
