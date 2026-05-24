@@ -56,13 +56,13 @@ export function ProximoLembrete() {
         <div
           role="status"
           aria-live="polite"
-          className="rounded-2xl bg-blue-50 px-5 py-4 text-blue-900"
+          className="rounded-2xl bg-teal-50 px-5 py-4 text-teal-900"
         >
           <span aria-hidden>🔔</span> {contextual}
         </div>
       )}
 
-      <div className="rounded-2xl bg-zinc-100 px-5 py-4 text-center">
+      <div className="rounded-2xl border border-teal-100 bg-white px-5 py-4 text-center shadow-sm">
         {proximo ? (
           <>
             <p className="text-zinc-600">
@@ -73,7 +73,7 @@ export function ProximoLembrete() {
             <button
               type="button"
               onClick={testarContextual}
-              className="mt-3 rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+              className="mt-3 rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
             >
               <span aria-hidden>▶</span> Ouvir aviso
             </button>

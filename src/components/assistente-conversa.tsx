@@ -126,7 +126,7 @@ export function AssistenteConversa() {
         type="button"
         onClick={conversar}
         disabled={estado !== "parado"}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-green-600 py-4 text-lg font-bold text-white hover:bg-green-700 disabled:opacity-70"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-700 py-4 text-lg font-bold text-white hover:bg-teal-800 disabled:opacity-70"
       >
         <span aria-hidden>💬</span>{" "}
         {estado === "parado"

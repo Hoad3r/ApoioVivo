@@ -115,7 +115,7 @@ export function ComandoVoz() {
         type="button"
         onClick={ouvir}
         disabled={ouvindo}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 py-4 text-lg font-bold text-white hover:bg-blue-800 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-white py-4 text-lg font-bold text-teal-700 hover:bg-teal-50 disabled:opacity-60"
       >
         <span aria-hidden>🎤</span> {ouvindo ? "Ouvindo…" : "Comando de voz"}
       </button>

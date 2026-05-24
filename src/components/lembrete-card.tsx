@@ -27,7 +27,7 @@ export function LembreteCard({ lembrete, onEditar, onExcluir }: LembreteCardProp
           type="button"
           onClick={() => falar(fala)}
           aria-label={`Ouvir lembrete: ${lembrete.titulo}`}
-          className="rounded-xl bg-blue-700 p-3 text-xl text-white hover:bg-blue-800"
+          className="rounded-xl bg-teal-700 p-3 text-xl text-white hover:bg-teal-800"
         >
           <span aria-hidden>🔊</span>
         </button>
