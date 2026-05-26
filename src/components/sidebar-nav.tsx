@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITENS = [
   { href: "/", label: "Início", icon: "🏠" },
+  { href: "/familia", label: "Família", icon: "👪" },
   { href: "/lembretes", label: "Lembretes", icon: "🔔" },
   { href: "/historico", label: "Histórico", icon: "🕐" },
   { href: "/monitoramento", label: "Câmera", icon: "📷" },

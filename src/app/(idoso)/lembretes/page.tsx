@@ -64,7 +64,7 @@ export default function LembretesPage() {
 
   return (
     <main>
-      <header className="flex items-center gap-3 rounded-b-3xl bg-blue-800 px-5 pb-6 pt-6 text-white">
+      <header className="flex items-center gap-3 rounded-b-3xl bg-gradient-to-br from-teal-600 to-teal-700 px-5 pb-6 pt-6 text-white">
         <Link href="/" aria-label="Voltar para o início" className="text-2xl">
           ←
         </Link>
@@ -75,7 +75,7 @@ export default function LembretesPage() {
         <button
           type="button"
           onClick={abrirNovo}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-green-600 py-4 text-xl font-bold text-white hover:bg-green-700"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-700 py-4 text-xl font-bold text-white hover:bg-teal-800"
         >
           <span aria-hidden>＋</span> Adicionar Lembrete
         </button>
@@ -130,7 +130,7 @@ export default function LembretesPage() {
             <div className="flex gap-2 pt-1">
               <button
                 type="submit"
-                className="flex-1 rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800"
+                className="flex-1 rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800"
               >
                 Salvar
               </button>

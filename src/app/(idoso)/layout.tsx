@@ -1,6 +1,7 @@
 import { NavInferior } from "@/components/nav-inferior";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { AvisoLembretes } from "@/components/aviso-lembretes";
+import { AssistenteMaosLivres } from "@/components/assistente-maos-livres";
 import { GuardaSessao } from "@/components/guarda-sessao";
 
 export default function IdosoLayout({
@@ -12,9 +13,10 @@ export default function IdosoLayout({
       <div className="flex-1">
         <GuardaSessao>
           <AvisoLembretes />
-          <div className="mx-auto w-full max-w-3xl pb-24 lg:pb-10">
+          <div className="mx-auto w-full max-w-3xl pb-40 lg:pb-24">
             {children}
           </div>
+          <AssistenteMaosLivres />
           <NavInferior />
         </GuardaSessao>
       </div>

@@ -11,6 +11,7 @@ import {
 } from "@/lib/vision/queda-movimento";
 import { traduzir } from "@/lib/vision/traducoes";
 import { infoObjetoEssencial } from "@/lib/vision/objetos-essenciais";
+import { registrarVisto } from "@/lib/vision/memoria-objetos";
 import { detectarAmbiente } from "@/lib/vision/ambiente";
 import { falar } from "@/lib/voice";
 import { frase, saudacoes } from "@/lib/frases";
@@ -35,6 +36,8 @@ export function MonitorCamera() {
   const registrarQuedaRef = useRef<(origem: "real" | "simulada") => void>(
     () => {},
   );
+  const confirmarBemRef = useRef<() => void>(() => {});
+  const timerConfirma = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saudou = useRef(false);
   const alertouCozinha = useRef(false);
   const historico = useRef<QuadroPose[]>([]);
@@ -58,6 +61,20 @@ export function MonitorCamera() {
     let ativo = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    // Avisa o cuidador (chamado quando a pessoa não responde após a queda).
+    function alertarCuidadorQueda(origem: "real" | "simulada") {
+      setAlertaQueda(false);
+      const detalhe =
+        origem === "simulada"
+          ? "Queda simulada (demonstração) — sem resposta da pessoa."
+          : "Uma possível queda foi detectada e a pessoa não respondeu.";
+      notificarCuidador("Apoio Vivo — Queda detectada", detalhe);
+      enviarAlertaEmail("Queda detectada", detalhe);
+      falar("Vou avisar alguém para te ajudar. Fique tranquilo.", {
+        urgente: true,
+      });
+    }
+
     function registrarQueda(origem: "real" | "simulada") {
       const agora = Date.now();
       if (agora - ultimaQueda.current < DEBOUNCE_QUEDA_MS) return;
@@ -70,20 +87,35 @@ export function MonitorCamera() {
             : "Queda detectada pela câmera",
         urgente: true,
       });
+      // Pergunta e DÁ TEMPO para a pessoa responder antes de acionar o cuidador.
+      setAlertaQueda(true);
       falar(
-        "Tudo bem? Parece que você caiu. Já avisei alguém para te ajudar.",
+        "Você caiu? Se estiver tudo bem, toque no botão Estou bem. Senão, vou chamar ajuda.",
         { urgente: true },
       );
-      const detalhe =
-        origem === "simulada"
-          ? "Queda simulada (demonstração)."
-          : "Uma possível queda foi detectada pela câmera.";
-      notificarCuidador("Apoio Vivo — Queda detectada", detalhe);
-      enviarAlertaEmail("Queda detectada", detalhe);
-      setAlertaQueda(true);
-      setTimeout(() => setAlertaQueda(false), 6000);
+      if (timerConfirma.current) clearTimeout(timerConfirma.current);
+      timerConfirma.current = setTimeout(
+        () => alertarCuidadorQueda(origem),
+        15000,
+      );
     }
     registrarQuedaRef.current = registrarQueda;
+
+    // A pessoa confirmou que está bem: cancela o alerta ao cuidador.
+    function confirmarBem() {
+      if (timerConfirma.current) {
+        clearTimeout(timerConfirma.current);
+        timerConfirma.current = null;
+      }
+      setAlertaQueda(false);
+      getDataStore().addEvento({
+        tipo: "atividade",
+        descricao: "Após a queda, a pessoa confirmou que está bem",
+        urgente: false,
+      });
+      falar("Que bom! Fico aliviado. Estou aqui com você.", { urgente: true });
+    }
+    confirmarBemRef.current = confirmarBem;
 
     function desenhar(preds: Predicao[]) {
       const v = videoRef.current;
@@ -95,7 +127,7 @@ export function MonitorCamera() {
       if (!ctx) return;
       ctx.clearRect(0, 0, c.width, c.height);
       ctx.lineWidth = 3;
-      ctx.strokeStyle = "#1d4ed8";
+      ctx.strokeStyle = "#0d9488";
       ctx.font = "18px sans-serif";
       for (const p of preds) {
         if (p.score < LIMIAR) continue;
@@ -103,7 +135,7 @@ export function MonitorCamera() {
         ctx.strokeRect(x, y, w, h);
         const label = traduzir(p.class);
         const lw = ctx.measureText(label).width + 10;
-        ctx.fillStyle = "#1d4ed8";
+        ctx.fillStyle = "#0d9488";
         ctx.fillRect(x, y - 24, lw, 24);
         ctx.fillStyle = "#ffffff";
         ctx.fillText(label, x + 5, y - 6);
@@ -173,6 +205,11 @@ export function MonitorCamera() {
 
           const amb = detectarAmbiente(classes);
           setAmbiente(amb);
+
+          // Memória do último local dos objetos essenciais (para "cadê meu X?").
+          for (const p of objetosUteis) {
+            if (infoObjetoEssencial(p.class)) registrarVisto(p.class, amb);
+          }
           if (amb === "cozinha" && !alertouCozinha.current) {
             alertouCozinha.current = true;
             const nome = nomeDaPessoa();
@@ -283,8 +320,10 @@ export function MonitorCamera() {
 
     async function iniciar() {
       try {
+        // Câmera frontal: o aparelho é do idoso, então a câmera precisa ver a
+        // pessoa (queda e reconhecimento facial dependem disso).
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+          video: { facingMode: "user" },
           audio: false,
         });
         const v = videoRef.current;
@@ -305,6 +344,7 @@ export function MonitorCamera() {
     return () => {
       ativo = false;
       if (timer) clearTimeout(timer);
+      if (timerConfirma.current) clearTimeout(timerConfirma.current);
       stream?.getTracks().forEach((t) => t.stop());
     };
   }, []);
@@ -314,14 +354,26 @@ export function MonitorCamera() {
       {alertaQueda && (
         <div
           role="alert"
-          className="rounded-2xl bg-red-600 px-5 py-4 text-center text-lg font-bold text-white"
+          className="space-y-3 rounded-2xl bg-red-600 px-5 py-4 text-center text-white"
         >
-          🚨 Você caiu? Fique tranquilo, já pedi ajuda para você.
+          <p className="text-lg font-bold">
+            🚨 Você caiu? Se estiver tudo bem, toque abaixo.
+          </p>
+          <button
+            type="button"
+            onClick={() => confirmarBemRef.current()}
+            className="w-full rounded-2xl bg-white py-4 text-xl font-bold text-red-700 hover:bg-red-50"
+          >
+            ✓ Estou bem
+          </button>
+          <p className="text-sm opacity-90">
+            Se você não responder, vou avisar um cuidador.
+          </p>
         </div>
       )}
 
       {saudacaoFacial && (
-        <div className="rounded-2xl bg-green-600 px-5 py-3 text-center text-lg font-bold text-white">
+        <div className="rounded-2xl bg-teal-600 px-5 py-3 text-center text-lg font-bold text-white">
           {saudacaoFacial}
         </div>
       )}
@@ -367,7 +419,7 @@ export function MonitorCamera() {
         <div
           role="status"
           aria-live="polite"
-          className="rounded-2xl bg-blue-50 px-5 py-4 text-blue-900"
+          className="rounded-2xl bg-teal-50 px-5 py-4 text-teal-900"
         >
           <span aria-hidden>💬</span> {infoObjeto}
         </div>

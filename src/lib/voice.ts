@@ -6,11 +6,29 @@
  * cada frase inteira, sem cortes. Mensagens urgentes (ex.: queda) usam
  * `{ urgente: true }` para interromper e serem ouvidas na hora.
  */
+// Cancela a fala em andamento se o app sair de vista (tela bloqueada/outro app).
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
+}
+
 export function falar(
   texto: string,
-  opcoes?: { urgente?: boolean; aoTerminar?: () => void },
+  opcoes?: {
+    urgente?: boolean;
+    aoTerminar?: () => void;
+    aoIniciar?: () => void;
+  },
 ): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    opcoes?.aoTerminar?.();
+    return;
+  }
+  // Só fala com o app aberto/visível — nada de áudio com a tela bloqueada.
+  if (typeof document !== "undefined" && document.hidden) {
     opcoes?.aoTerminar?.();
     return;
   }
@@ -25,9 +43,9 @@ export function falar(
   const fala = new SpeechSynthesisUtterance(texto);
   fala.lang = "pt-BR";
   fala.rate = 0.9; // um pouco mais devagar: mais claro para o idoso
-  if (opcoes?.aoTerminar) {
-    fala.onend = () => opcoes.aoTerminar?.();
-    fala.onerror = () => opcoes.aoTerminar?.();
-  }
+  // Hooks para a escuta contínua pausar enquanto o app fala (não se ouvir).
+  fala.onstart = () => opcoes?.aoIniciar?.();
+  fala.onend = () => opcoes?.aoTerminar?.();
+  fala.onerror = () => opcoes?.aoTerminar?.();
   synth.speak(fala);
 }

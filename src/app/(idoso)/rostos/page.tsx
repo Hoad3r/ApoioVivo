@@ -18,7 +18,7 @@ const CadastroRosto = dynamic(
 export default function RostosPage() {
   return (
     <main>
-      <header className="flex items-center gap-3 rounded-b-3xl bg-blue-800 px-5 pb-6 pt-6 text-white">
+      <header className="flex items-center gap-3 rounded-b-3xl bg-gradient-to-br from-teal-600 to-teal-700 px-5 pb-6 pt-6 text-white">
         <Link href="/monitoramento" aria-label="Voltar" className="text-2xl">
           ←
         </Link>

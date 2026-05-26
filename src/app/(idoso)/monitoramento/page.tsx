@@ -18,7 +18,7 @@ const MonitorCamera = dynamic(
 export default function MonitoramentoPage() {
   return (
     <main>
-      <header className="flex items-center gap-3 rounded-b-3xl bg-blue-800 px-5 pb-6 pt-6 text-white">
+      <header className="flex items-center gap-3 rounded-b-3xl bg-gradient-to-br from-teal-600 to-teal-700 px-5 pb-6 pt-6 text-white">
         <Link href="/" aria-label="Voltar para o início" className="text-2xl">
           ←
         </Link>
@@ -27,7 +27,7 @@ export default function MonitoramentoPage() {
       <div className="px-5 py-6">
         <Link
           href="/rostos"
-          className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3 font-semibold text-blue-700 hover:bg-blue-100"
+          className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-teal-50 py-3 font-semibold text-teal-700 hover:bg-teal-100"
         >
           <span aria-hidden>👤</span> Cadastrar rostos para reconhecimento
         </Link>

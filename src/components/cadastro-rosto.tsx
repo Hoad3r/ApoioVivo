@@ -103,7 +103,7 @@ export function CadastroRosto() {
         <button
           type="submit"
           disabled={ocupado}
-          className="w-full rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60"
+          className="w-full rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800 disabled:opacity-60"
         >
           {ocupado ? "Processando…" : "📸 Cadastrar rosto"}
         </button>

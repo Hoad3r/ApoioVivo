@@ -3,7 +3,6 @@ import { BotaoGrande } from "@/components/botao-grande";
 import { AltoContrasteToggle } from "@/components/alto-contraste-toggle";
 import { ProximoLembrete } from "@/components/proximo-lembrete";
 import { ComandoVoz } from "@/components/comando-voz";
-import { AssistenteConversa } from "@/components/assistente-conversa";
 import { CabecalhoInicio } from "@/components/cabecalho-inicio";
 
 export default function Inicio() {
@@ -35,10 +34,10 @@ export default function Inicio() {
         </div>
       </div>
 
-      <AssistenteConversa />
       <ComandoVoz />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <BotaoGrande href="/familia" label="Família" icon="👪" variante="teal" />
         <BotaoGrande href="/lembretes" label="Lembretes" icon="🔔" variante="teal" />
         <BotaoGrande href="/monitoramento" label="Câmera" icon="📷" variante="teal" />
         <BotaoGrande href="/historico" label="Histórico" icon="🕐" variante="neutro" />
