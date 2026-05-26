@@ -33,6 +33,25 @@ export async function adicionarCuidador(c: Omit<Cuidador, "id">): Promise<void> 
   if (error) throw error;
 }
 
+/** Atualiza os dados de um cuidador/familiar (RLS garante o escopo). */
+export async function atualizarCuidador(
+  id: string,
+  c: Omit<Cuidador, "id">,
+): Promise<void> {
+  const supabase = getSupabaseBrowser();
+  if (!supabase) return;
+  const { error } = await supabase
+    .from("cuidadores")
+    .update({
+      nome: c.nome,
+      parentesco: c.parentesco,
+      email: c.email,
+      telefone: c.telefone,
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 /** Remove um cuidador/familiar. */
 export async function removerCuidador(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();

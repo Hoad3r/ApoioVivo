@@ -26,7 +26,7 @@ export function GraficoAtividade({ dados, media }: GraficoAtividadeProps) {
               {d.percentual}%
             </span>
             <div
-              className="w-full max-w-8 rounded-t bg-blue-600"
+              className="w-full max-w-8 rounded-t bg-teal-600"
               style={{ height: Math.max(4, d.percentual * 1.1) }}
               aria-hidden
             />

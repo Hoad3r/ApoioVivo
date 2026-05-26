@@ -34,7 +34,7 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 py-10">
-      <Link href="/" className="text-blue-700">
+      <Link href="/" className="text-teal-700">
         ← Início
       </Link>
       <h1 className="mt-4 text-2xl font-bold text-zinc-900">
@@ -83,7 +83,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={carregando}
-            className="w-full rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60"
+            className="w-full rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800 disabled:opacity-60"
           >
             {carregando ? "Aguarde…" : modo === "entrar" ? "Entrar" : "Criar conta"}
           </button>
@@ -95,7 +95,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setModo(modo === "entrar" ? "cadastrar" : "entrar")}
-            className="w-full text-center text-sm text-blue-700"
+            className="w-full text-center text-sm text-teal-700"
           >
             {modo === "entrar"
               ? "Não tem conta? Criar conta"

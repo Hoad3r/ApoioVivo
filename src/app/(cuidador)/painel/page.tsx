@@ -21,7 +21,7 @@ const ESTILO_ALERTA: Record<TipoEvento, { cor: string; icone: string; titulo: st
   "lembrete-ignorado": { cor: "bg-amber-500", icone: "⚠️", titulo: "Lembrete Ignorado" },
   queda: { cor: "bg-red-600", icone: "🚨", titulo: "Queda Detectada" },
   emergencia: { cor: "bg-red-600", icone: "📞", titulo: "Emergência Acionada" },
-  objeto: { cor: "bg-blue-600", icone: "📦", titulo: "Objeto Reconhecido" },
+  objeto: { cor: "bg-teal-600", icone: "📦", titulo: "Objeto Reconhecido" },
 };
 
 function formatar(criadoEm: string): string {
@@ -79,7 +79,7 @@ export default function PainelCuidadorPage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-zinc-50 shadow-sm sm:max-w-lg">
-      <header className="flex items-center gap-3 rounded-b-3xl bg-blue-800 px-5 pb-6 pt-6 text-white">
+      <header className="flex items-center gap-3 rounded-b-3xl bg-gradient-to-br from-teal-600 to-teal-700 px-5 pb-6 pt-6 text-white">
         <Link href="/" aria-label="Voltar para o início" className="text-2xl">
           ←
         </Link>
@@ -94,7 +94,7 @@ export default function PainelCuidadorPage() {
           <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
             <span
               aria-hidden
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-700 text-2xl text-white"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 text-2xl text-white"
             >
               👤
             </span>
@@ -116,7 +116,7 @@ export default function PainelCuidadorPage() {
           <button
             type="button"
             onClick={ativarNotificacoes}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800"
           >
             <span aria-hidden>🔔</span> Ativar notificações no dispositivo
           </button>

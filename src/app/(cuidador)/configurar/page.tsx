@@ -67,7 +67,7 @@ export default function ConfigurarPage() {
   return (
     <main className="mx-auto min-h-dvh max-w-md px-5 py-10">
       {jaTinhaPerfil && (
-        <Link href="/" className="text-blue-700">
+        <Link href="/" className="text-teal-700">
           ← Início
         </Link>
       )}
@@ -87,7 +87,7 @@ export default function ConfigurarPage() {
           <p className="text-zinc-700">Entre para configurar o dispositivo.</p>
           <Link
             href="/login"
-            className="mt-3 inline-block rounded-xl bg-blue-700 px-5 py-2 font-bold text-white"
+            className="mt-3 inline-block rounded-xl bg-teal-700 px-5 py-2 font-bold text-white"
           >
             Entrar
           </Link>
@@ -124,7 +124,7 @@ export default function ConfigurarPage() {
             <button
               type="submit"
               disabled={salvando}
-              className="w-full rounded-xl bg-blue-700 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60"
+              className="w-full rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800 disabled:opacity-60"
             >
               {salvando ? "Salvando…" : jaTinhaPerfil ? "Salvar" : "Continuar"}
             </button>
@@ -139,7 +139,7 @@ export default function ConfigurarPage() {
             <div className="mt-4 space-y-3">
               <Link
                 href="/cuidadores"
-                className="block rounded-xl bg-green-600 px-5 py-3 text-center font-bold text-white"
+                className="block rounded-xl bg-teal-700 px-5 py-3 text-center font-bold text-white"
               >
                 👥 Cuidadores e familiares
               </Link>
