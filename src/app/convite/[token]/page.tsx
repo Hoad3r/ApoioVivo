@@ -14,7 +14,7 @@ export default function ConvitePage() {
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
-    if (!form.nome.trim() || !form.email.trim()) return;
+    if (!form.nome.trim() || !form.email.trim() || !form.telefone.trim()) return;
     setEstado("enviando");
     setErro(null);
     try {
@@ -47,7 +47,7 @@ export default function ConvitePage() {
       </p>
 
       {estado === "ok" ? (
-        <div className="mt-6 rounded-2xl bg-green-50 p-5 text-green-800">
+        <div className="mt-6 rounded-2xl bg-teal-50 p-5 text-teal-800">
           <p className="text-lg font-bold">✓ Cadastro concluído!</p>
           <p className="mt-1 text-sm">
             Você passará a receber por e-mail os alertas (queda, emergência e
@@ -81,15 +81,17 @@ export default function ConvitePage() {
             className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-lg"
           />
           <input
+            type="tel"
             value={form.telefone}
             onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-            placeholder="Telefone (opcional)"
+            placeholder="Telefone (para ligar / WhatsApp)"
+            required
             className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-lg"
           />
           <button
             type="submit"
             disabled={estado === "enviando"}
-            className="w-full rounded-xl bg-green-600 py-3 font-bold text-white hover:bg-green-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-teal-700 py-3 font-bold text-white hover:bg-teal-800 disabled:opacity-60"
           >
             {estado === "enviando" ? "Enviando…" : "Confirmar cadastro"}
           </button>
